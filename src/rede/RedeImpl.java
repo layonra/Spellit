@@ -2,57 +2,53 @@ package rede;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import br.com.rede.*;
 import ui.Ui;
 
-public class RedeImpl implements Rede, Recebedor {
+public class RedeImpl implements Rede, Recebedor, AguardarServidor, ThreadEnvioException {
 	private Network network;
-	private List<String> ltexto = new ArrayList<String>();
-	private String ip;
+	private List<String> ltexto;
+	private String ipServidor;
+	private Thread thread;
+	private ThreadEnvio threadEnvio;
 
 	public RedeImpl() {
-		this.ip = "";
+		this.ipServidor = "";
 		this.network = new NetworkImpl();
+		this.ltexto = new ArrayList<String>();
+		this.threadEnvio = new ThreadEnvio(network, RedeImpl.this);
 		this.receberTexto();
+		this.aguardarServidor();
 	}
 
-	public String aguardarServidor() {
-		String ip = "";
-		try {
-			ip = network.aguardarServidor(1078);
-		} catch (IOException e) {
-			System.out.println("" + e.getMessage());
-		}
-		return ip;
-	}
-
-	@Override
-	public void enviarTexto(String texto) {
-
-		Thread thread = new Thread(new Runnable() {
+	public void aguardarServidor() {
+		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
-
-					if (ip.equals(""))
-						ip = aguardarServidor();
-					
-					for (String texto : ltexto) {
-						Ui.textoEnviado(texto, ip);
-						network.sendIPPacket(texto, ip, 2078);
-					}
-					ltexto.clear();
-				} catch (IOException ioe) {
-					ip = "";
+					network.aguardarServidor(1078, RedeImpl.this);
+				} catch (IOException e) {
+					System.out.println("Aguardar Servidor: " + e.getMessage());
+					setIpServidor("");
 				}
 			}
-		});
-		thread.start();
+		}).start();
+	}
+
+	@Override
+	public void enviarTexto(String texto) {
+		Thread t = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				getLtexto().add(texto);
+			}
+		});		
+		t.start();
+		t.interrupt();
 	}
 
 	@Override
@@ -66,7 +62,7 @@ public class RedeImpl implements Rede, Recebedor {
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
-					e.printStackTrace();
+					Ui.erroEnderecoUso();
 				}
 			}
 		}).start();
@@ -75,6 +71,44 @@ public class RedeImpl implements Rede, Recebedor {
 	@Override
 	public void receiveMessage(String texto, String ip) {
 		Ui.textoRecebido(texto, ip);
+	}
+
+	@Override
+	public void receberOk(String ip) {
+		this.ipServidor = ip;
+		if(!this.getLtexto().isEmpty()) {
+			this.threadEnvio.setIp(ip);
+			for(String texto : this.getLtexto()) {
+				System.out.println("RECEBEOK: " + texto);
+				this.threadEnvio.setTexto(texto);
+				this.thread = new Thread(threadEnvio);
+				this.thread.start();
+			}			
+		}
+	}
+
+	public List<String> getLtexto() {
+		return ltexto;
+	}
+
+	public void setLtexto(List<String> ltexto) {
+		this.ltexto = ltexto;
+	}
+
+	public String getIpServidor() {
+		return ipServidor;
+	}
+
+	public void setIpServidor(String ipServidor) {
+		this.ipServidor = ipServidor;
+	}
+
+	@Override
+	public void envioException(Exception e) {
+		Ui.texto("Erro no envio dos dados");
+		if (thread.isAlive()) {
+			thread.stop();
+		}
 	}
 
 }

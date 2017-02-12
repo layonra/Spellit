@@ -2,7 +2,7 @@ package ui;
 
 import ctrl.Controller;
 
-public class Main {
+public class MainCliente {
 	
 	public static void main(String args[]) {
 		Controller controller = Controller.getInstance();

@@ -17,11 +17,15 @@ public final class Ui {
 	}
 	
 	public static void textoEnviado(String texto, String ip) {
-		System.out.println("Texto Enviado para " + ip + ": " + texto);
+		System.out.println("\nTexto Enviado para " + ip + ": " + texto);
 	}
 	
 	public static void statusServidor(String status) {
 		System.out.println("Status do Servidor: " + status);
+	}
+	
+	public static void erroEnderecoUso() {
+		System.out.println("Ops!\nJá existe um cliente aberto");
 	}
 	
 	public String escreverAlgo(){
@@ -29,5 +33,9 @@ public final class Ui {
 		System.out.print("Escreva algo: ");
 		String texto = scan.next();
 		return texto;
+	}
+	
+	public static void texto(String texto) {
+		System.out.println("" + texto);
 	}
 }
