@@ -70,6 +70,11 @@ public class RedeImpl implements Rede, Recebedor, AguardarServidor, ThreadEnvioE
 
 	@Override
 	public void receiveMessage(String texto, String ip) {
+		String textoSemCorrigir = texto.substring(0, texto.indexOf("-"));
+		
+		if(this.getLtexto().contains(textoSemCorrigir))
+			this.getLtexto().remove(textoSemCorrigir);
+
 		Ui.textoRecebido(texto, ip);
 	}
 
@@ -79,7 +84,6 @@ public class RedeImpl implements Rede, Recebedor, AguardarServidor, ThreadEnvioE
 		if(!this.getLtexto().isEmpty()) {
 			this.threadEnvio.setIp(ip);
 			for(String texto : this.getLtexto()) {
-				System.out.println("RECEBEOK: " + texto);
 				this.threadEnvio.setTexto(texto);
 				this.thread = new Thread(threadEnvio);
 				this.thread.start();
@@ -105,10 +109,8 @@ public class RedeImpl implements Rede, Recebedor, AguardarServidor, ThreadEnvioE
 
 	@Override
 	public void envioException(Exception e) {
-		Ui.texto("Erro no envio dos dados");
 		if (thread.isAlive()) {
 			thread.stop();
 		}
 	}
-
 }

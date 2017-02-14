@@ -35,7 +35,7 @@ public final class Ui {
 		return texto;
 	}
 	
-	public static void texto(String texto) {
+	public static void textoLivre(String texto) {
 		System.out.println("" + texto);
 	}
 }
