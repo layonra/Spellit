@@ -28,6 +28,10 @@ public final class Ui {
 		System.out.println("Ops!\nJá existe um cliente aberto");
 	}
 	
+	public static void removendoCache(String cache) {
+		System.out.println("Removendo " + cache);
+	}
+	
 	public String escreverAlgo(){
 		Scanner scan = new Scanner(System.in);
 		System.out.print("Escreva algo: ");

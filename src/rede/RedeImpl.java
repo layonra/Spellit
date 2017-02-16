@@ -41,14 +41,17 @@ public class RedeImpl implements Rede, Recebedor, AguardarServidor, ThreadEnvioE
 	@Override
 	public void enviarTexto(String texto) {
 		Thread t = new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
-				getLtexto().add(texto);
+				if (!texto.equalsIgnoreCase("cache")){
+					getLtexto().add(texto);
+				}else
+					Ui.textoLivre(getLtexto().toString());
 			}
-		});		
+		});
 		t.start();
-		t.stop();
+		t.interrupt();
 	}
 
 	@Override
@@ -71,9 +74,10 @@ public class RedeImpl implements Rede, Recebedor, AguardarServidor, ThreadEnvioE
 	@Override
 	public void receiveMessage(String texto, String ip) {
 		String textoSemCorrigir = texto.substring(0, texto.indexOf("-"));
-		
-		if(this.getLtexto().contains(textoSemCorrigir))
-			this.getLtexto().remove(textoSemCorrigir);
+
+		if (this.getLtexto().contains(textoSemCorrigir))
+			Ui.removendoCache(textoSemCorrigir);
+		this.getLtexto().remove(textoSemCorrigir);
 
 		Ui.textoRecebido(texto, ip);
 	}
@@ -81,13 +85,14 @@ public class RedeImpl implements Rede, Recebedor, AguardarServidor, ThreadEnvioE
 	@Override
 	public void receberOk(String ip) {
 		this.ipServidor = ip;
-		if(!this.getLtexto().isEmpty()) {
-			this.threadEnvio.setIp(ip);
-			for(String texto : this.getLtexto()) {
-				this.threadEnvio.setTexto(texto);
-				this.thread = new Thread(threadEnvio);
-				this.thread.start();
-			}			
+		if (!getLtexto().isEmpty()) {
+			threadEnvio.setIp(ip);
+			for (String texto : getLtexto()) {
+				threadEnvio.setTexto(texto);
+				thread = new Thread(threadEnvio);
+				thread.start();
+				thread.interrupt();
+			}
 		}
 	}
 
