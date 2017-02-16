@@ -48,7 +48,7 @@ public class RedeImpl implements Rede, Recebedor, AguardarServidor, ThreadEnvioE
 			}
 		});		
 		t.start();
-		t.interrupt();
+		t.stop();
 	}
 
 	@Override
